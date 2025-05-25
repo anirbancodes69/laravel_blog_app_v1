@@ -28,7 +28,9 @@ class BlogController extends Controller
             default => $blogs->latest()
         };
 
-        $blogs = $blogs->get();
+        // CACHE SET
+        $cacheKey = 'blogs:' . $filter . ':' . $title;
+        $blogs = cache()->remember($cacheKey, 3600, fn() => $blogs->get());
 
         return view('blogs.index', ['blogs' => $blogs]);
     }
@@ -54,9 +56,12 @@ class BlogController extends Controller
      */
     public function show(Blog $blog)
     {
-        $blog->load([
+        $cacheKey = 'blog:' . $blog->id;
+
+        $blog = cache()->remember($cacheKey, 3600, fn() =>  $blog->load([
             'comments' => fn($query) => $query->latest()
-        ]);
+        ]));
+
         return view('blogs.show', ['blog' => $blog]);
     }
 
