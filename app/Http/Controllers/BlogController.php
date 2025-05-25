@@ -13,10 +13,22 @@ class BlogController extends Controller
     public function index(Request $request)
     {
         $title = $request->title;
+        $filter = $request->input('filter', '');
+
         $blogs = Blog::when(
             $title,
             fn($query, $title) => $query->title($title)
-        )->get();
+        );
+
+        $blogs = match ($filter) {
+            'popular_last_month' => $blogs->popularLastMonth(),
+            'popular_last_6_month' => $blogs->popularLast6Month(),
+            'highest_rated_last_month' => $blogs->highestRatedLastMonth(),
+            'highest_rated_last_6_month' => $blogs->highestRatedLast6Month(),
+            default => $blogs->latest()
+        };
+
+        $blogs = $blogs->get();
 
         return view('blogs.index', ['blogs' => $blogs]);
     }
@@ -40,9 +52,12 @@ class BlogController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Blog $blog)
     {
-        //
+        $blog->load([
+            'comments' => fn($query) => $query->latest()
+        ]);
+        return view('blogs.show', ['blog' => $blog]);
     }
 
     /**

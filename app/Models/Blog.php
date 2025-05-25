@@ -57,4 +57,33 @@ class Blog extends Model
     {
         return $query->having('comments_count', '>=', $minReview);
     }
+
+
+    public function scopePopularLastMonth(Builder $query): Builder | QueryBuilder
+    {
+        return $query->popular(now()->subMonth(), now())
+            ->highestRated(now()->subMonth(), now())
+            ->minComments(2);
+    }
+
+    public function scopePopularLast6Month(Builder $query): Builder | QueryBuilder
+    {
+        return $query->popular(now()->subMonth(6), now())
+            ->highestRated(now()->subMonth(6), now())
+            ->minComments(5);
+    }
+
+    public function scopeHighestRatedLastMonth(Builder $query): Builder | QueryBuilder
+    {
+        return $query->highestRated(now()->subMonth(), now())
+            ->popular(now()->subMonth(), now())
+            ->minComments(2);
+    }
+
+    public function scopeHighestRatedLast6Month(Builder $query): Builder | QueryBuilder
+    {
+        return $query->highestRated(now()->subMonth(6), now())
+            ->popular(now()->subMonth(6), now())
+            ->minComments(5);
+    }
 }
