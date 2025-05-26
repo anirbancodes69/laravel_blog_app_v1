@@ -13,7 +13,10 @@ Route::resource('blogs', BlogController::class)->only(['index', 'show']);
 
 Route::resource('blogs.comments', CommentController::class)
     ->scoped(['comment' => 'book'])
-    ->only(['create', 'store']);
+    ->only(['create', 'store'])
+    ->middleware([
+        'store' => 'throttle:5,1'
+    ]);
 
 
 Route::fallback(function () {

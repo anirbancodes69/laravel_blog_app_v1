@@ -30,12 +30,12 @@ class blogController extends Controller
 
         $cacheKey = 'blogs:' . $filter . ':' . $title;
         $blogs =
-            // cache()->remember(
-            // $cacheKey,
-            // 3600,
-            // fn() =>
-            $blogs->get();
-        // );
+            cache()->remember(
+                $cacheKey,
+                3600,
+                fn() =>
+                $blogs->get()
+            );
 
         return view('blogs.index', ['blogs' => $blogs]);
     }
