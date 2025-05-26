@@ -8,7 +8,7 @@
         <div class="book-author mb-4 text-lg font-semibold">by Anirban</div>
         <div class="book-rating flex items-center">
             <div class="mr-2 text-sm font-medium text-slate-700">
-                {{ number_format($blog->comments_avg_rating, 1) }}
+                <x-star-rating :rating="$blog->comments_avg_rating" />
             </div>
             <span class="book-review-count text-sm text-gray-500">
                 {{ $blog->comments_count }} {{ Str::plural('comment', $blog->comments_count) }}
@@ -24,7 +24,10 @@
         <li class="book-item mb-4">
             <div>
                 <div class="mb-2 flex items-center justify-between">
-                    <div class="font-semibold">{{ $comment->rating }}</div>
+                    <div class="font-semibold">
+                        <x-star-rating :rating="$comment->rating" />
+                    </div>
+
                     <div class="book-review-count">
                         {{ $comment->created_at->format('M j, Y') }}</div>
                 </div>
