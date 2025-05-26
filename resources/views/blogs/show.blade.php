@@ -17,6 +17,10 @@
     </div>
 </div>
 
+<div class="mb-4">
+    <a href="{{route('blogs.comments.create', $blog)}}" class="reset-link">Add a review!</a>
+</div>
+
 <div>
     <h2 class="mb-4 text-xl font-semibold">Comments</h2>
     <ul>

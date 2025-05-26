@@ -23,5 +23,6 @@ class Comment extends Model
         //working in mass assign
         static::updated(fn(Comment $comment) => cache()->forget('blog:' . $comment->blog_id));
         static::deleted(fn(Comment $comment) => cache()->forget('blog:' . $comment->blog_id));
+        static::created(fn(Comment $comment) => cache()->forget('blog:' . $comment->blog_id));
     }
 }
