@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Blog;
 use Illuminate\Http\Request;
 
-class BlogController extends Controller
+class blogController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $title = $request->title;
+        $title = $request->input('title');
         $filter = $request->input('filter', '');
 
         $blogs = Blog::when(
@@ -22,15 +22,20 @@ class BlogController extends Controller
 
         $blogs = match ($filter) {
             'popular_last_month' => $blogs->popularLastMonth(),
-            'popular_last_6_month' => $blogs->popularLast6Month(),
+            'popular_last_6months' => $blogs->popularLast6Months(),
             'highest_rated_last_month' => $blogs->highestRatedLastMonth(),
-            'highest_rated_last_6_month' => $blogs->highestRatedLast6Month(),
-            default => $blogs->latest()
+            'highest_rated_last_6months' => $blogs->highestRatedLast6Months(),
+            default => $blogs->latest()->withAvgRating()->withCommentsCount()
         };
 
-        // CACHE SET
         $cacheKey = 'blogs:' . $filter . ':' . $title;
-        $blogs = cache()->remember($cacheKey, 3600, fn() => $blogs->get());
+        $blogs =
+            // cache()->remember(
+            // $cacheKey,
+            // 3600,
+            // fn() =>
+            $blogs->get();
+        // );
 
         return view('blogs.index', ['blogs' => $blogs]);
     }
@@ -54,13 +59,18 @@ class BlogController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Blog $blog)
+    public function show(int $id)
     {
-        $cacheKey = 'blog:' . $blog->id;
+        $cacheKey = 'blog:' . $id;
 
-        $blog = cache()->remember($cacheKey, 3600, fn() =>  $blog->load([
-            'comments' => fn($query) => $query->latest()
-        ]));
+        $blog = cache()->remember(
+            $cacheKey,
+            3600,
+            fn() =>
+            Blog::with([
+                'comments' => fn($query) => $query->latest()
+            ])->withAvgRating()->withCommentsCount()->findOrFail($id)
+        );
 
         return view('blogs.show', ['blog' => $blog]);
     }

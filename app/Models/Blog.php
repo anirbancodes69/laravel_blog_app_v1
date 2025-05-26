@@ -23,21 +23,33 @@ class Blog extends Model
         return $query->where('title', 'LIKE', '%' . $title . '%');
     }
 
-    public function scopePopular(Builder $query, $from = null, $to = null): Builder|QueryBuilder
+    public function scopeWithCommentsCount(Builder $query, $from = null, $to = null): Builder|QueryBuilder
     {
         return $query->withCount([
             'comments' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)
-        ])->orderByDesc('comments_count');
+        ]);
     }
 
-    public function scopeHighestRated(Builder $query, $from = null, $to = null): Builder
+    public function scopeWithAvgRating(Builder $query, $from = null, $to = null): Builder|QueryBuilder
     {
         return $query->withAvg(
             [
                 'comments' => fn(Builder $q) => $this->dateRangeFilter($q, $from, $to)
             ],
             'rating'
-        )->orderBy('comments_avg_rating', 'desc');
+        );
+    }
+
+    public function scopePopular(Builder $query): Builder|QueryBuilder
+    {
+        return $query->WithCommentsCount()
+            ->orderByDesc('comments_count');
+    }
+
+    public function scopeHighestRated(Builder $query): Builder
+    {
+        return $query->withAvgRating()
+            ->orderBy('comments_avg_rating', 'desc');
     }
 
     private function dateRangeFilter(Builder $query, $from = null, $to = null)
@@ -48,8 +60,6 @@ class Blog extends Model
             $query->where('created_at', '<=', $to);
         } else if ($from != null && $to != null) {
             $query->whereBetween('created_at', [$from, $to]);
-        } else {
-            $query->where('created_at', '>=', now()->subDays(30));
         }
     }
 
@@ -85,5 +95,13 @@ class Blog extends Model
         return $query->highestRated(now()->subMonth(6), now())
             ->popular(now()->subMonth(6), now())
             ->minComments(5);
+    }
+
+    // INVALIDATE CACHE
+    protected static function booted()
+    {
+        //working in mass assign
+        static::updated(fn(Blog $blog) => cache()->forget('blog:' . $blog->id));
+        static::deleted(fn(Blog $blog) => cache()->forget('blog:' . $blog->id));
     }
 }

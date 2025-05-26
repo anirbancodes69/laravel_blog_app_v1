@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('blogs.index');
 });
 
 Route::resource('blogs', BlogController::class);
